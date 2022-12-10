@@ -12,15 +12,22 @@
     <canvas id="canvas" width="480px" height="480px"></canvas>
 
     <div style="display: none;">
-        <img src="./assets/sprites-katrina.gif" />
+        <img src="./assets/sprites/sprites-katrina.gif" />
     </div>
 
     <script src="utils/uuid.js"></script>
-    <script src="entities/entity.js"></script>
-    <script src="entities/character.js"></script>
-    <script src="entities/npc.js"></script>
-    <script src="entities/hero.js"></script>
-    <script src="game.js"></script>
-    <script src="init.js"></script>
+    <script src="utils/map-helper.js"></script>
+
+    <script type="module" src="entities/entity.js"></script>
+    <script type="module" src="entities/character.js"></script>
+    <script type="module" src="entities/npc.js"></script>
+    <script type="module" src="entities/hero.js"></script>
+    <script type="module" src="game.js"></script>
+
+    <script type="module" src="assets/objects.js"></script>
+    <script type="module" src="assets/tiles.js"></script>
+    <script type="module" src="assets/walls.js"></script>
+
+    <script type="module" src="init.js"></script>
 </body>
 </html>

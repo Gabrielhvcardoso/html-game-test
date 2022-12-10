@@ -1,3 +1,5 @@
+import BaseEntity from "./entity.js"
+
 class Character extends BaseEntity {
     unrest = false
     unrestInterval = null
@@ -67,3 +69,5 @@ class Character extends BaseEntity {
         } 
     }
 }
+
+export default Character

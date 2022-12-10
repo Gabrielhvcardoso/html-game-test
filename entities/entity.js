@@ -5,3 +5,5 @@ class BaseEntity {
         this.id = id ?? uuid()
     }
 }
+
+export default BaseEntity

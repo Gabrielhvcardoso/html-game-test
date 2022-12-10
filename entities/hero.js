@@ -1,3 +1,5 @@
+import Character from './character.js'
+
 class Hero extends Character {
     static character_type = 'hero'
 
@@ -5,3 +7,5 @@ class Hero extends Character {
         super({ game, x, y, width, height, speed, character_type: Hero.character_type })
     }
 }
+
+export default Hero

@@ -1,3 +1,6 @@
+import Hero from './entities/hero.js'
+import NPC from './entities/npc.js'
+
 class Game {
 
     fps = 30
@@ -95,7 +98,7 @@ class Game {
             let rowObjects = []
 
             row.forEach((mapBlock, x) => {
-                if (mapBlock.type === 'object') {
+                if (mapBlock.type === 'object' || mapBlock.type === 'wall') {
                     let obj = {
                         ...mapBlock,
                         left: this.getGridUnit(x),
@@ -168,14 +171,56 @@ class Game {
     drawMap = () => {
         for (let row = 0; row < this.map.length; row++) {
             for (let col = 0; col < this.map[row].length; col++) {
-                this.createRect({
-                    x: this.getGridUnit(col),
-                    y: this.getGridUnit(row),
-                    width: this.getGridUnit(1),
-                    height: this.getGridUnit(1),
-                    color: this.map[row][col].color
-                })
+                let mapBlock = this.map[row][col]
+                this.drawMapBlock(mapBlock, col, row)
             }
+        }
+    }
+
+    drawMapBlock = (mapBlock, gridX, gridY) => {
+
+        // detailed block
+        if (mapBlock.map?.length) {
+            let blockMap = mapBlock.map
+            let blockRows = blockMap.length
+            let blockCols = Math.max(...blockMap.map(mapRow => mapRow.length))
+
+            let blockPointWidth = this.getGridUnit(1) / blockCols
+            let blockPointHeight = this.getGridUnit(1) / blockRows
+
+            for (let i = 0; i < blockRows; i++) {
+                let yOffset = blockPointHeight * (i)
+
+                for (let j = 0; j < blockCols; j++) {
+                    let xOffset = blockPointWidth * (j)
+
+                    let blockPointColor = blockMap[i][j]
+
+                    this.createRect({
+                        x: this.getGridUnit(gridX) + xOffset,
+                        y: this.getGridUnit(gridY) + yOffset,
+                        width: blockPointWidth,
+                        height: blockPointHeight,
+                        color: blockPointColor
+                    })
+                }
+            }
+        }
+
+        // solid color block
+        else if (mapBlock.color) {
+            this.createRect({
+                x: this.getGridUnit(gridX),
+                y: this.getGridUnit(gridY),
+                width: this.getGridUnit(1),
+                height: this.getGridUnit(1),
+                color: mapBlock.color
+            })
+        }
+
+        // exception
+        else {
+            throw Error(`Map Block ${mapBlock.id} does not have suficient properties`)
         }
     }
 
@@ -201,3 +246,5 @@ class Game {
         })
     }
 }
+
+export default Game
