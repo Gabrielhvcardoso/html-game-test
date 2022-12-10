@@ -5,6 +5,7 @@ class Game {
     wallColor = '#23395D'
     groundColor = '#BCD2E8'
 
+    defaultCharacterSettings = null
     characterMap = []
     objectMap = []
 
@@ -38,27 +39,25 @@ class Game {
         this.ctx = config.ctx;
         this.map = config.map;
 
-        let character = new NPC({
+        this.defaultCharacterSettings = {
             game: this,
-            x: this.getGridUnit(20),
-            y: this.getGridUnit(20),
             width: this.getGridUnit(1),
-            height: this.getGridUnit(1),
-            speed: this.getGridUnit(0.3),
-
-            unrest: 50
-        })
-
-        this.characterMap.push(character)
+            height: this.getGridUnit(1)
+        }
 
         this.hero = new Hero({
-            game: this,
+            ...this.defaultCharacterSettings,
             x: this.getGridUnit(10),
             y: this.getGridUnit(10),
-            width: this.getGridUnit(1),
-            height: this.getGridUnit(1),
-            speed: this.getGridUnit(0.3)
         })
+
+        let npc = new NPC({
+            ...this.defaultCharacterSettings,
+            x: this.getGridUnit(20),
+            y: this.getGridUnit(20),
+        })
+
+        this.characterMap.push(npc)
 
         this.gameInterval = setInterval(this.gameLoop, 1000 / this.fps)
 
@@ -181,6 +180,16 @@ class Game {
     }
 
     drawCharacter() {
+        if (this.hero) {
+            this.createRect({
+                x: this.hero?.x,
+                y: this.hero?.y,
+                width: this.hero.width,
+                height: this.hero.height,
+                color: 'red'
+            })
+        }
+
         this.characterMap.map((character) => {
             this.createRect({
                 x: character.x,
@@ -190,17 +199,5 @@ class Game {
                 color: 'blue'
             })
         })
-
-        this.createRect({
-            x: this.hero.x,
-            y: this.hero.y,
-            width: this.hero.width,
-            height: this.hero.height,
-            color: 'red'
-        })
     }
 }
-
-
-
-
