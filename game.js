@@ -1,14 +1,11 @@
+import GameDrawer from './drawer.js'
 import Hero from './entities/hero.js'
 import NPC from './entities/npc.js'
 
 class Game {
-
     fps = 30
     blockSize = 20
-    wallColor = '#23395D'
-    groundColor = '#BCD2E8'
-
-    defaultCharacterSettings = null
+    hero = null
     characterMap = []
     objectMap = []
 
@@ -19,28 +16,17 @@ class Game {
         87 : { down: false, action: () => this.hero.moveTo('up') },
     }
 
-    // refs
-
-    hero = null
+    defaultCharacterSettings = null
     gameInterval = null
     keydownListener = null
     keyupListener = null
 
-
-    /**
-     * Map objects expect to looks like that:
-     * 
-     * ```ts
-     * interface MapObject {
-     *     type: string,
-     *     color: string,
-     * }
-     * ```
-     */
     constructor(config) {
         this.canvas = config.canvas;
         this.ctx = config.ctx;
         this.map = config.map;
+        this.objectMap = config.objectMap;
+        this.drawer = new GameDrawer({ game: this })
 
         this.defaultCharacterSettings = {
             game: this,
@@ -70,8 +56,7 @@ class Game {
 
     gameLoop = () => {
         this.update()
-        this.drawMap()
-        this.drawCharacter()
+        this.drawer.update()
     }
 
     update = () => {
@@ -81,38 +66,12 @@ class Game {
                 this.keys[key].action()
             }
         }
-
-        this.updateObjectMap()
     }
 
     // HELPERS
 
     getGridUnit = (value) => {
         return this.blockSize * value
-    }
-
-    // OBJECTS
-
-    updateObjectMap = () => {
-        this.objectMap = this.map.reduce((objects, row, y) => {
-            let rowObjects = []
-
-            row.forEach((mapBlock, x) => {
-                if (mapBlock.type === 'object' || mapBlock.type === 'wall') {
-                    let obj = {
-                        ...mapBlock,
-                        left: this.getGridUnit(x),
-                        top: this.getGridUnit(y),
-                        right: this.getGridUnit(x + 1),
-                        bottom: this.getGridUnit(y + 1)
-                    }
-
-                    rowObjects.push(obj)
-                }
-            })
-
-            return objects.concat(rowObjects)
-        }, [])
     }
 
     verifyColision = (character_type, { left, right, top, bottom }, id) => {
@@ -126,7 +85,12 @@ class Game {
 
         // colisions between hero|character and objects
 
-        let colision = this.objectMap.some((obj) => {
+        let colision = this.objectMap.filter(obj => !obj.passable).some((obj) => {
+            obj.top = this.getGridUnit(obj.gridY)
+            obj.right = this.getGridUnit(obj.gridX + (obj.gridW ?? 1))
+            obj.bottom = this.getGridUnit(obj.gridY + (obj.gridH ?? 1))
+            obj.left = this.getGridUnit(obj.gridX)
+
             let horizontalIntersec = right > obj.left && left < obj.right
             let verticalIntersec = bottom > obj.top && top < obj.bottom
             return horizontalIntersec && verticalIntersec
@@ -159,91 +123,6 @@ class Game {
         }
 
         return colision
-    }
-
-    // DRAW
-
-    createRect = ({ x, y, width, height, color }) => {
-        this.ctx.fillStyle = color;
-        this.ctx.fillRect(x, y, width, height)
-    }
-
-    drawMap = () => {
-        for (let row = 0; row < this.map.length; row++) {
-            for (let col = 0; col < this.map[row].length; col++) {
-                let mapBlock = this.map[row][col]
-                this.drawMapBlock(mapBlock, col, row)
-            }
-        }
-    }
-
-    drawMapBlock = (mapBlock, gridX, gridY) => {
-
-        // detailed block
-        if (mapBlock.map?.length) {
-            let blockMap = mapBlock.map
-            let blockRows = blockMap.length
-            let blockCols = Math.max(...blockMap.map(mapRow => mapRow.length))
-
-            let blockPointWidth = this.getGridUnit(1) / blockCols
-            let blockPointHeight = this.getGridUnit(1) / blockRows
-
-            for (let i = 0; i < blockRows; i++) {
-                let yOffset = blockPointHeight * (i)
-
-                for (let j = 0; j < blockCols; j++) {
-                    let xOffset = blockPointWidth * (j)
-
-                    let blockPointColor = blockMap[i][j]
-
-                    this.createRect({
-                        x: this.getGridUnit(gridX) + xOffset,
-                        y: this.getGridUnit(gridY) + yOffset,
-                        width: blockPointWidth,
-                        height: blockPointHeight,
-                        color: blockPointColor
-                    })
-                }
-            }
-        }
-
-        // solid color block
-        else if (mapBlock.color) {
-            this.createRect({
-                x: this.getGridUnit(gridX),
-                y: this.getGridUnit(gridY),
-                width: this.getGridUnit(1),
-                height: this.getGridUnit(1),
-                color: mapBlock.color
-            })
-        }
-
-        // exception
-        else {
-            throw Error(`Map Block ${mapBlock.id} does not have suficient properties`)
-        }
-    }
-
-    drawCharacter() {
-        if (this.hero) {
-            this.createRect({
-                x: this.hero?.x,
-                y: this.hero?.y,
-                width: this.hero.width,
-                height: this.hero.height,
-                color: 'red'
-            })
-        }
-
-        this.characterMap.map((character) => {
-            this.createRect({
-                x: character.x,
-                y: character.y,
-                width: character.width,
-                height: character.height,
-                color: 'blue'
-            })
-        })
     }
 }
 
